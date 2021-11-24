@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -69,7 +70,7 @@ public class SignUpTest {
                 "регистрации не верно");
     }
 
-    @Test
+    @Test(groups = {"login"})
     public void userShouldLogIn() {
         driver.get("https://www.sharelane.com/cgi-bin/register.py");
         WebElement el = driver.findElement(By.name("zip_code"));
@@ -99,7 +100,102 @@ public class SignUpTest {
         driver.findElement(By.cssSelector("[value='Login']")).click();
 
         WebElement greetings = driver.findElement(By.className("user"));
-        Assert.assertTrue(greetings.isDisplayed(), "Приветствие зарегистрированного пользователя не появилось");
+        Assert.assertTrue(greetings.isDisplayed(), "Приветствие зарегистрированного пользователя не появилось!");
+    }
+
+    @AfterMethod(onlyForGroups = {"login"})
+    public void tearDown() {
+        driver.findElement(By.linkText("Logout")).click();
+    }
+
+    @Test
+    public void registerValidationErrorShouldAppearWhenFirstNameIsEmpty() {
+        driver.get("https://www.sharelane.com/cgi-bin/register.py");
+        WebElement el = driver.findElement(By.name("zip_code"));
+        el.sendKeys("11111");
+        driver.findElement(By.cssSelector("form[action='./register.py']")).submit();
+
+        driver.findElement(By.name("last_name")).sendKeys("Buko");
+        driver.findElement(By.name("email")).sendKeys("test@test.com");
+        driver.findElement(By.name("password1")).sendKeys("11111");
+        driver.findElement(By.name("password2")).sendKeys("11111");
+
+        driver.findElement(By.cssSelector("[value='Register']")).click();
+
+        String errorMessage = driver.findElement(By.className("error_message")).getText();
+        Assert.assertEquals(errorMessage, "Oops, error on page. Some of your fields have invalid data or email was previously used",
+                "Валидационное сообщение формы регистрации не верно!");
+    }
+
+    @Test
+    public void registerValidationErrorShouldAppearWhenEmailIsEmpty() {
+        driver.get("https://www.sharelane.com/cgi-bin/register.py");
+        WebElement el = driver.findElement(By.name("zip_code"));
+        el.sendKeys("11111");
+        driver.findElement(By.cssSelector("form[action='./register.py']")).submit();
+
+        driver.findElement(By.name("first_name")).sendKeys("Vadim");
+        driver.findElement(By.name("last_name")).sendKeys("Buko");
+        driver.findElement(By.name("password1")).sendKeys("11111");
+        driver.findElement(By.name("password2")).sendKeys("11111");
+
+        driver.findElement(By.cssSelector("[value='Register']")).click();
+
+        String errorMessage = driver.findElement(By.className("error_message")).getText();
+        Assert.assertEquals(errorMessage, "Oops, error on page. Some of your fields have invalid data or email was previously used",
+                "Валидационное сообщение формы регистрации не верно!");
+    }
+
+    @Test
+    public void registerValidationErrorShouldAppearWhenPasswordIsEmpty() {
+        driver.get("https://www.sharelane.com/cgi-bin/register.py");
+        WebElement el = driver.findElement(By.name("zip_code"));
+        el.sendKeys("11111");
+        driver.findElement(By.cssSelector("form[action='./register.py']")).submit();
+
+        driver.findElement(By.name("first_name")).sendKeys("Vadim");
+        driver.findElement(By.name("last_name")).sendKeys("Buko");
+        driver.findElement(By.name("email")).sendKeys("test@test.com");
+        driver.findElement(By.name("password2")).sendKeys("11111");
+
+        driver.findElement(By.cssSelector("[value='Register']")).click();
+
+        String errorMessage = driver.findElement(By.className("error_message")).getText();
+        Assert.assertEquals(errorMessage, "Oops, error on page. Some of your fields have invalid data or email was previously used",
+                "Валидационное сообщение формы регистрации не верно!");
+    }
+
+    @Test
+    public void registerValidationErrorShouldAppearWhenConfirmPasswordIsEmpty() {
+        driver.get("https://www.sharelane.com/cgi-bin/register.py");
+        WebElement el = driver.findElement(By.name("zip_code"));
+        el.sendKeys("11111");
+        driver.findElement(By.cssSelector("form[action='./register.py']")).submit();
+
+        driver.findElement(By.name("first_name")).sendKeys("Vadim");
+        driver.findElement(By.name("last_name")).sendKeys("Buko");
+        driver.findElement(By.name("email")).sendKeys("test@test.com");
+        driver.findElement(By.name("password1")).sendKeys("11111");
+
+        driver.findElement(By.cssSelector("[value='Register']")).click();
+
+        String errorMessage = driver.findElement(By.className("error_message")).getText();
+        Assert.assertEquals(errorMessage, "Oops, error on page. Some of your fields have invalid data or email was previously used",
+                "Валидационное сообщение формы регистрации не верно!");
+    }
+
+    @Test
+    public void passwordFieldShouldBeMasked() {
+        driver.get("https://www.sharelane.com/cgi-bin/register.py");
+        WebElement el = driver.findElement(By.name("zip_code"));
+        el.sendKeys("11111");
+        driver.findElement(By.cssSelector("form[action='./register.py']")).submit();
+
+        driver.findElement(By.name("first_name")).sendKeys("Vadim");
+        driver.findElement(By.name("last_name")).sendKeys("Buko");
+        driver.findElement(By.name("email")).sendKeys("test@test.com");
+        String passwordType = driver.findElement(By.name("password2")).getAttribute("type");
+
+        Assert.assertEquals(passwordType, "password", "Поле пароль не не имеет маскировки");
     }
 }
-
